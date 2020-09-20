@@ -1,0 +1,40 @@
+{
+  "version": "0.0.1",
+  "name": "componit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marshallcb/componit.git"
+  },
+  "description": "Minimal isomorphic components",
+  "module": "dist/index.mjs",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Marshall Brandt",
+    "email": "hey@m4r.sh",
+    "url": "https://m4r.sh"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build",
+    "test": "uvu -r esm test"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^15.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "8.1.0",
+    "esm": "^3.2.25",
+    "rollup": "2.21.0",
+    "rollup-plugin-terser": "6.1.0"
+  },
+  "dependencies": {
+    "ucontent": "^2.0.0",
+    "uhtml": "^2.1.1"
+  }
+}

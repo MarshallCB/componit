@@ -9,7 +9,7 @@
   </a>
 </div>
 
-<div align="center">Isomorphic component builder for leightweight delivery</div>
+<div align="center">Isomorphic component builder with lightweight delivery options</div>
 
 ## Usage
 
@@ -30,7 +30,7 @@ export default componit({
   }
 })
 
-export style = `
+export style = /* css */`
   .test{
     background: #faa;
   }
@@ -53,3 +53,6 @@ export style = `
 import build from 'componit/build'
 
 ```
+
+## Acknowledgements
+- 

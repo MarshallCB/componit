@@ -2,6 +2,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import json from '@rollup/plugin-json'
 import pkg from './package.json';
+import replace from '@rollup/plugin-replace';
+import fs from 'fs'
 
 import commonjs from '@rollup/plugin-commonjs';
 
@@ -35,10 +37,10 @@ export default [{
 		json()
 	]
 }, {
-	input: 'src/browser.js',
+	input: 'src/bundler.js',
 	output: [{
 		format: 'esm',
-		file: 'dist/browser.js',
+		file: 'dist/bundler.js',
 		sourcemap: false
 	}],
 	external: [
@@ -47,6 +49,9 @@ export default [{
 		...Object.keys(pkg.peerDependencies || {}),
 	],
 	plugins: [
-		resolve()
+		resolve(),
+		replace({
+			__virtual_componit__: fs.readFileSync('./src/browser.js')
+		})
 	]
 }]

@@ -16,9 +16,9 @@
 ### Writing components
 
 ```js
-import { ssr } from 'componit'
+import { render } from 'componit'
 
-export default componit({
+export default render({
   tag: 'div',
   attributes: {
     className: "test"
@@ -29,6 +29,10 @@ export default componit({
     `
   }
 })
+
+export handler = {
+  onClick: {}
+}
 
 export style = /* css */`
   .test{
@@ -50,7 +54,53 @@ export style = /* css */`
 ### Build API
 
 ```js
-import build from 'componit/build'
+import bundler from 'componit/bundler'
+
+let b = bundler('components')
+let render = await b({
+
+})
+let saturation = await 
+
+```
+
+### Config file
+
+```js
+
+export default {
+  source: "/components",
+  destination: "/public/components",
+  formats: [
+    {
+      transports: 'default',
+      componit: js`__virtual_componit__`.toString(),
+      minify: true,
+      extension:".js"
+    },
+    {
+      transports: 'handler',
+      minify: true,
+      external(id,parent){
+        if(id.startsWith('.') && parent.includes(path.join(process.cwd(), '/components'))){
+          return true;
+        }
+        return false;
+      },
+      extension:".augm-it.js"
+    },
+    {
+      transports: "style",
+      minify: true,
+      extension: ".css"
+    },
+    {
+      transports: "*",
+      minify: true,
+      extension: ".ce.js"
+    }
+  ]
+}
 
 ```
 

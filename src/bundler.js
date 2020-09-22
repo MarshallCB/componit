@@ -37,7 +37,7 @@ export default (inputDir) => {
   return async function bundle(options){
     let { ports, componit, minify, external, format, extension } = {
       ports: 'default',
-      componit: __virtual_componit__,
+      componit: js`__virtual_componit__`.toString(),
       minify: true,
       format:"esm",
       extension:".js",

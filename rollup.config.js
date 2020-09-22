@@ -46,6 +46,7 @@ export default [{
 	external: [
 		...require('module').builtinModules,
 		...Object.keys(pkg.dependencies || {}),
+		...Object.keys(pkg.devDependencies || {}),
 		...Object.keys(pkg.peerDependencies || {}),
 	],
 	plugins: [

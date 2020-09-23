@@ -19,12 +19,14 @@
   <a href="#About"><b>About</b></a>
 </div>
 
+---
+
 # How it works
 
 | Diagram | Explanation |
 | :-- | :-- |
-| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files export an SSR-friendly string as the default. Additional named exports can be used for customization. <br/><br/> [Example component](#Writing-components) |
-| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js`. <br/><br/> [Example config file](#Config-file) |
+| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files export an SSR-friendly string as the default. This allows for importing components to render HTML pages. Additional named exports can be used for additional customization. <br/><br/> [Example component](#Writing-components) |
+| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js`. This compiles the source component files to browser-friendly files. <br/><br/> [Example config file](#Config-file) |
 | **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. The exported files are based on the settings in the config file. <br/><br/> [Client-side strategies](#Client-side-strategies) |
 
 # Usage

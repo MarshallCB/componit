@@ -10,7 +10,7 @@
   },
   "description": "Minimal isomorphic components",
   "main": "src/index.js",
-  "license": "MIT",
+  "license": "ISC",
   "author": {
     "name": "Marshall Brandt",
     "email": "hey@m4r.sh",

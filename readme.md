@@ -11,15 +11,15 @@
 
 <div align="center">Isomorphic component builder with lightweight delivery options</div>
 <h3 align="center">:construction: Work in progress :construction:</h3>
-<div align="center">[Usage](#usage) [How it works](#How-it-works)</div>
+<div align="center"><a href="#usage"><b>Usage</b></a></div>
 
 ## How it works
 
 | Diagram | Explanation |
 | --- | --- |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
+| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
+| ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
+| **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
 
 
 

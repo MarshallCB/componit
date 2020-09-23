@@ -17,9 +17,9 @@
 
 | Diagram | Explanation |
 | --- | --- |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/slice1.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/slice2.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
-| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/slice3.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
+| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
+| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
+| ![Source](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
 
 
 

@@ -25,7 +25,7 @@
   "scripts": {
     "use:npmReadme": "mv 'readme.md' 'docs/git.README.md' && mv 'docs/npm.README.md' 'README.md'",
     "use:gitReadme": "mv 'README.md' 'docs/npm.README.md' && mv 'git.README.md' 'readme.md'",
-    "prepublishOnly": "run-s build use:npmReadme",
+    "prepublishOnly": "npm run use:npmReadme",
     "postpublish": "npm run use:gitReadme"
   },
   "dependencies": {

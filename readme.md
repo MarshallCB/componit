@@ -16,9 +16,9 @@
 ## How it works
 
 | Diagram | Explanation |
-| --- | --- |
+| :-- | :-- |
 | **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
-| ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
+| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
 | **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
 
 

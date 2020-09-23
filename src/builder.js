@@ -8,7 +8,6 @@ var chokidar = require('chokidar')
 var load_config = require('./config.js');
 const fs = require('fs-extra')
 
-// TODO: ensure .js on imports for browser
 // TODO: ensure runtime is included for saturation that needs it (oof!)
 
 module.exports = class Componit{
@@ -22,7 +21,13 @@ module.exports = class Componit{
   }
 
   watch(){
-    console.log("todo")
+    this.build()
+    this.watcher = chokidar.watch(this.source, {
+      ignoreInitial: true
+    })
+    this.watcher.on('all', (e, p) => {
+      this.build()
+    })
   }
 
   build(){
@@ -31,6 +36,7 @@ module.exports = class Componit{
         fs.ensureDirSync(this.destination)
         fs.writeFileSync(path.join(this.destination, p), files[p])
       })
+      console.log(`componit: generated ${ Object.keys(files).length } files`)
     })
   }
 
@@ -70,9 +76,6 @@ module.exports = class Componit{
         minify: true,
         extension:".js",
         external(id,parent){
-          if(id.startsWith('.') && parent.includes(source) && !path.basename(id).startsWith("_")){
-            return true;
-          }
           return false;
         },
         ...b
@@ -80,27 +83,28 @@ module.exports = class Componit{
       let components = {}
       names.forEach(name => {
         let m = require(path.join(this.source, name))
-        let valid = (Array.isArray(transports) ? transports : [transports]).every(k => Object.keys(m).includes(k))
+        let ports = transports === '*' ? Object.keys(m) : transports
+        let valid = (Array.isArray(ports) ? ports : [ports]).every(k => Object.keys(m).includes(k))
         if(valid){
           let imported, exported;
-          if(Array.isArray(transports)){
-            let dIndex = transports.indexOf('default')
+          if(Array.isArray(ports)){
+            let dIndex = ports.indexOf('default')
             if(dIndex != -1){
-              // has a default at transports[dIndex]
-              let d = transports.splice(dIndex, 1)
-              imported = `${name}, { ${transports.join(', ')} }`
-              exported = `export default ${name}; export { ${transports.join(', ')} }`
+              // has a default at ports[dIndex]
+              let d = ports.splice(dIndex, 1)
+              imported = `${name}, { ${ports.join(', ')} }`
+              exported = `export default ${name}; export { ${ports.join(', ')} }`
             } else {
-              imported = `{ ${transports.join(', ')} }`
-              exported = `export { ${transports.join(', ')} }`
+              imported = `{ ${ports.join(', ')} }`
+              exported = `export { ${ports.join(', ')} }`
             }
           } else {
-            if(transports === 'default'){
+            if(ports === 'default'){
               imported = name;
               exported = `export default ${name}`
             } else {
-              imported = `{ ${transports} }`
-              exported = `export default ${transports}`
+              imported = `{ ${ports} }`
+              exported = `export default ${ports}`
             }
           }
           components[name] = js`

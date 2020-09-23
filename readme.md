@@ -11,16 +11,16 @@
 
 <div align="center">Isomorphic component builder with lightweight delivery options</div>
 
-# Note: this is still a work in progress
+# Note: this is a work in progress
 
 ## Usage
 
 ### Writing components
 
 ```js
-import { render } from 'componit'
+import componit from 'componit'
 
-export default render({
+export default componit({
   tag: 'div',
   attributes: {
     className: "test"
@@ -50,7 +50,9 @@ export style = /* css */`
 ### CLI
 ```bash
   # Build components based on `componit.config.js` and watch for changes
-  componit -w -c componit.config.js
+  componit -w 
+  # Build components without watching for changes
+  componit
 ```
 
 ### Config file
@@ -59,12 +61,8 @@ export style = /* css */`
 
 export default {
   source: "components",
-  destination: "public/components",
-  runtime: {
-    browser: '/components/_browser.js',
-    server: '/components/_server.js'
-  },
-  formats: [
+  destination: "www",
+  builds: [
     {
       transports: 'default',
       minify: true,
@@ -78,15 +76,10 @@ export default {
     {
       transports: "style",
       minify: true,
-      extension: ".css"
+      extension: ".css.js"
     },
     {
-      transports: "*",
-      minify: true,
-      extension: ".ce.min.js"
-    },
-    {
-      transports: "*",
+      transports: '*',
       minify: false,
       extension: ".ce.js"
     }

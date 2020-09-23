@@ -13,17 +13,15 @@
 <h3 align="center">:construction: Work in progress :construction:</h3>
 <div align="center"><a href="#usage"><b>Usage</b></a></div>
 
-## How it works
+# How it works
 
 | Diagram | Explanation |
 | :-- | :-- |
-| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
-| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
-| **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
+| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files export an SSR-friendly string as the default. Additional named exports can be used for customization. <br/><br/> [Example component](#Writing-components) |
+| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js`. <br/><br/> [Example config file](#Config-file) |
+| **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. The exported files are based on the settings in the config file. <br/><br/> [Client-side strategies](#Client-side strategies) |
 
-
-
-## Usage
+# Usage
 
 ### Writing components
 
@@ -56,21 +54,11 @@ export style = /* css */`
     color: #a30;
   }
 `
-
-```
-
-### CLI
-```bash
-# Build components based on `componit.config.js` and watch for changes
-componit -w 
-# Build components without watching for changes
-componit
 ```
 
 ### Config file
 
 ```js
-
 export default {
   source: "components",
   destination: "www",
@@ -97,8 +85,21 @@ export default {
     }
   ]
 }
-
 ```
 
-## Acknowledgements
-- 
+### CLI
+```bash
+# Build components based on `componit.config.js` and watch for changes
+componit -w 
+# Build components without watching for changes
+componit
+```
+
+## Motivation
+Coming soon
+
+## Development
+Coming soon
+
+## References
+Coming soon

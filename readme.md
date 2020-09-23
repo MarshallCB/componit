@@ -10,8 +10,7 @@
 </div>
 
 <div align="center">Isomorphic component builder with lightweight delivery options</div>
-
-# Note: this is a work in progress
+<h3 align="center">:construction: Work in progress :construction:</h3>
 
 ## Usage
 
@@ -33,7 +32,9 @@ export default componit({
 })
 
 export handler = {
-  onClick: {}
+  onClick: {
+    console.log("Clicked!")
+  }
 }
 
 export style = /* css */`
@@ -49,10 +50,10 @@ export style = /* css */`
 
 ### CLI
 ```bash
-  # Build components based on `componit.config.js` and watch for changes
-  componit -w 
-  # Build components without watching for changes
-  componit
+# Build components based on `componit.config.js` and watch for changes
+componit -w 
+# Build components without watching for changes
+componit
 ```
 
 ### Config file

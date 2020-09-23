@@ -5,9 +5,12 @@
     "type": "git",
     "url": "git+https://github.com/marshallcb/componit.git"
   },
+  "bin": {
+    "componit": "/cli.js"
+  },
   "description": "Minimal isomorphic components",
   "module": "dist/index.mjs",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "license": "MIT",
   "author": {
     "name": "Marshall Brandt",
@@ -21,9 +24,7 @@
     "node": ">= 10"
   },
   "scripts": {
-    "build": "rollup -c",
-    "prepublishOnly": "npm run build",
-    "test": "uvu -r esm test"
+    "test": ""
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.0.0",
@@ -35,6 +36,10 @@
   },
   "dependencies": {
     "@rollup/plugin-replace": "^2.3.3",
+    "@rollup/plugin-virtual": "^2.0.3",
+    "chokidar": "^3.4.2",
+    "fs-extra": "^9.0.1",
+    "sade": "^1.7.3",
     "ucontent": "^2.0.0",
     "uhtml": "^2.1.1"
   }

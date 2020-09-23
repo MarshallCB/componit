@@ -1,32 +1,19 @@
 #!/usr/bin/env node
 
+require = require("esm")(module)
 const sade = require('sade');
 const pkg = require('./package.json')
 const path = require('path')
-const Componit = require('./index.js');
-require = require("esm")(module)
+const Componit = require('./src/builder.js');
 
 sade('componit', true)
 .version(pkg.version)
 .describe(pkg.description)
-.example('componit -c custom.config.js')
+.example('componit')
 .example('componit -w')
-.option('-w, --watch', 'Watch source directories and rebuild on changes')
-.option('-c, --config', 'Provide path to custom config file', 'componit.config.js')
-.option('-i, --input', 'Input directory', 'components')
-.option('-o --output', 'Output directory', 'public/components')
+.option('-w, --watch', 'Watch source directory and rebuild on changes')
 .action((opts) => {
-  let configPath = path.join(process.cwd(), opts.config)
-  let config = {
-    source: opts.i,
-    destination: opts.o
-  }
-  try {
-    config = { ...config, ...require(configPath).default }
-  } catch(e){
-
-  }
-  let componit = new Componit({ cwd: process.cwd(), ...config })
+  let componit = new Componit()
   if(opts.watch){
     componit.watch()
   } else {

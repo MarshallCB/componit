@@ -1,5 +1,5 @@
 import { html, raw, svg } from 'ucontent'
-import { transformDefinition } from './utils'
+import { transformDefinition } from './shared'
 
 // Return HTML string for server-side rendering
 export default (id, definition) => (props) => {
@@ -8,7 +8,7 @@ export default (id, definition) => (props) => {
   return html`
     ${raw`
       <${tag} 
-        ${attributes.map( ([name,value]) => raw`${name}="${value}"`).join(" ")
+        ${Object.keys(attributes).map(k => raw`${k}="${attributes[k]}"`).join(" ")
       }> 
     `}
     ${

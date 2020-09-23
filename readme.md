@@ -11,6 +11,17 @@
 
 <div align="center">Isomorphic component builder with lightweight delivery options</div>
 <h3 align="center">:construction: Work in progress :construction:</h3>
+<div align="center">[Usage](#usage) [How it works](#How-it-works)</div>
+
+## How it works
+
+| Diagram | Explanation |
+| --- | --- |
+| ![Source](https://github.com/MarshallCB/componit/tree/master/docs/slice1.png) | Source files are importable within the source code as an SSR string [example](#Writing-components) |
+| ![Source](https://github.com/MarshallCB/componit/tree/master/docs/slice2.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js` [example](#Config-file) |
+| ![Source](https://github.com/MarshallCB/componit/tree/master/docs/slice3.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. [example](#Writing-components) |
+
+
 
 ## Usage
 

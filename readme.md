@@ -20,6 +20,12 @@
 
 ---
 
+# Concept
+
+Write components definitions that export an SSR string and build to a collection of browser-importable files for different loading strategies. This gives you the ability to use components in the most performant way for your website. Built to pair with [augm-it](https://github.com/augm-dev/augm-it).
+
+**Strategies**: [SSR Saturation](#SSR-Saturation) | [On-site Render](#On-site-Render) | [External](#External)
+
 # Usage
 
 ### Writing components
@@ -56,17 +62,22 @@ export style = /* css */`
 ```
 
 ### CLI
-```bash
-Usage
-$ componit [input] [output] [options]
 
-Options
+**Usage**
+```bash
+$ componit [input] [output] [options]
+```
+
+**Options**
+```bash
 -w, --watch      Watch source directory and rebuild on changes
 -l, --long       Disable minification  (default false)
 -v, --version    Displays current version
 -h, --help       Displays this message
+```
 
-Examples
+**Examples**
+```bash
 $ componit components www/components
 $ componit source public/components --watch
 $ componit source public/components -w -l
@@ -74,6 +85,16 @@ $ componit source public/components -w -l
 
 # Strategies
 Coming Soon
+
+## SSR Saturation
+
+## On-site Render
+
+## External
+
+### Single component
+
+### Component collection
 
 # Motivation
 Coming soon

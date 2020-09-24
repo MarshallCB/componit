@@ -12,7 +12,6 @@
 <div align="center">Isomorphic component builder with lightweight delivery options</div>
 <h3 align="center">:construction: Work in progress :construction:</h3>
 <div align="center">
-  <a href="#How-it-works"><b>How it works</b></a> | 
   <a href="#Usage"><b>Usage</b></a> | 
   <a href="#Strategies"><b>Strategies</b></a> | 
   <a href="#Motivation"><b>Motivation</b></a> | 
@@ -20,14 +19,6 @@
 </div>
 
 ---
-
-# How it works
-
-| Diagram | Explanation |
-| :-- | :-- |
-| **Source files** ![Source](https://github.com/MarshallCB/componit/blob/master/docs/source-files.png) | Source files export an SSR-friendly string as the default. This allows for importing components to render HTML pages. Additional named exports can be used for additional customization. <br/><br/> [Example component](#Writing-components) |
-| **Build command** ![Build](https://github.com/MarshallCB/componit/blob/master/docs/npx-componit.png) | The `componit` CLI will build browser-friendly files based on `componit.config.js`. This compiles the source component files to browser-friendly files. <br/><br/> [Example config file](#Config-file) |
-| **Browser files** ![Output](https://github.com/MarshallCB/componit/blob/master/docs/browser-files.png) | The browser files are importable from the browser for saturation, client-side rendering, etc. The exported files are based on the settings in the config file. <br/><br/> [Client-side strategies](#Client-side-strategies) |
 
 # Usage
 
@@ -64,43 +55,21 @@ export style = /* css */`
 `
 ```
 
-### Config file
-
-```js
-export default {
-  source: "components",
-  destination: "www",
-  builds: [
-    {
-      transports: 'default',
-      minify: true,
-      extension:".js"
-    },
-    {
-      transports: 'handler',
-      minify: true,
-      extension:".augm-it.js"
-    },
-    {
-      transports: "style",
-      minify: true,
-      extension: ".css.js"
-    },
-    {
-      transports: '*',
-      minify: false,
-      extension: ".ce.js"
-    }
-  ]
-}
-```
-
 ### CLI
 ```bash
-# Build components based on `componit.config.js` and watch for changes
-componit -w 
-# Build components without watching for changes
-componit
+Usage
+$ componit [input] [output] [options]
+
+Options
+-w, --watch      Watch source directory and rebuild on changes
+-l, --long       Disable minification  (default false)
+-v, --version    Displays current version
+-h, --help       Displays this message
+
+Examples
+$ componit components www/components
+$ componit source public/components --watch
+$ componit source public/components -w -l
 ```
 
 # Strategies

@@ -5,19 +5,17 @@ var { terser } = require('rollup-plugin-terser')
 var virtual = require('@rollup/plugin-virtual')
 var { js } = require('ucontent')
 var chokidar = require('chokidar')
-var load_config = require('./config.js');
 const fs = require('fs-extra')
 
-// TODO: ensure runtime is included for saturation that needs it (oof!)
+// TODO: different runtimes for each build type
 
 module.exports = class Componit{
-  constructor(){
-    let { source, destination, browser_runtime_path, builds } = load_config()
+  constructor(source, destination, builds, long){
     this.source = source
     this.destination = destination
-    this.browser_runtime_path = browser_runtime_path
     this.runtime = null
     this.builds = builds;
+    this.minify = !long;
   }
 
   watch(){
@@ -33,8 +31,9 @@ module.exports = class Componit{
   build(){
     Promise.resolve(this.bundle()).then(files => {
       Object.keys(files).forEach(p => {
-        fs.ensureDirSync(this.destination)
-        fs.writeFileSync(path.join(this.destination, p), files[p])
+        let d = path.join(this.destination, p)
+        fs.ensureFileSync(d)
+        fs.writeFileSync(d, files[p])
       })
       console.log(`componit: generated ${ Object.keys(files).length } files`)
     })
@@ -42,11 +41,11 @@ module.exports = class Componit{
 
   async virtualBrowser(){
     let browser_bundle = await rollup({
-      input: this.browser_runtime_path,
+      input: path.join(__dirname, './runtime/browser.js'),
       output: "y",
       plugins: [
         nodeResolve(),
-        terser()
+        ...(this.minify ? [terser()] : [])
       ]
     })
     let { output } = await browser_bundle.generate({
@@ -67,13 +66,12 @@ module.exports = class Componit{
       n = n.replace(this.source, "")
       n = n.replace(".js","")
       return n;
-    }).filter(name => !name.startsWith("_"))
+    }).filter(name => !name.startsWith("_") && !name.startsWith("."))
     let out = {}
 
     await Promise.all(this.builds.map(async b => {
       let { transports, minify, external, extension } = {
         transports: 'default',
-        minify: true,
         extension:".js",
         external(id,parent){
           return false;
@@ -130,14 +128,14 @@ module.exports = class Componit{
             componit: this.runtime || `export default ()=>{}`
           }),
           nodeResolve(),
-          terser() // TODO: add minify option
+          ...(this.minify ? [terser()] : [])
         ],
         external
       })
       let { output } = await rollup_bundle.generate({
         format: "esm",
         chunkFileNames: ({name}) => `${name.replace("_virtual:","")}`,
-        entryFileNames: ({name}) => `${name.replace("_virtual:","")}${extension}`,
+        entryFileNames: ({name}) => `${name.replace("_virtual:","")}/${extension}`,
         manualChunks(id){
           let a = names
           let i = a.findIndex(n => id.includes(n))

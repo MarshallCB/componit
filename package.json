@@ -17,7 +17,7 @@
     "url": "https://m4r.sh"
   },
   "files": [
-    "dist"
+    "src"
   ],
   "engines": {
     "node": ">= 10"

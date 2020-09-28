@@ -99,6 +99,8 @@ module.exports = class Componit{
       }
       let components = {}
       names.forEach(name => {
+        // Clear require cache
+        delete require.cache[path.join(this.source, name)]
         let m = require(path.join(this.source, name))
         let ports = transports === '*' ? Object.keys(m) : transports
         // Make sure all ports are included in this file before building

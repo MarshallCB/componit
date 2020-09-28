@@ -4,7 +4,7 @@ require = require("esm")(module)
 const sade = require('sade');
 const pkg = require('./package.json')
 const path = require('path')
-const Componit = require('./src/builder.js');
+const Componit = require(path.join(__dirname, './src/builder.js'));
 
 sade('componit [input] [output]', true)
 .version(pkg.version)

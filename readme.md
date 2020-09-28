@@ -73,12 +73,12 @@ export style = /* css */`
 ### CLI
 
 **Usage**
-```bash
+```
 $ componit [input] [output] [options]
 ```
 
 **Options**
-```bash
+```
 -w, --watch      Watch source directory and rebuild on changes
 -l, --long       Disable minification  (default false)
 -v, --version    Displays current version
@@ -86,7 +86,7 @@ $ componit [input] [output] [options]
 ```
 
 **Examples**
-```bash
+```
 $ componit components www/components
 $ componit source public/components --watch
 $ componit source public/components -w -l

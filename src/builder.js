@@ -3,7 +3,7 @@ var path = require('path')
 var { rollup } = require('rollup')
 var { terser } = require('rollup-plugin-terser')
 var virtual = require('@rollup/plugin-virtual')
-var { js } = require('ucontent')
+var { js, css } = require('ucontent')
 var chokidar = require('chokidar')
 const fs = require('fs-extra')
 
@@ -54,6 +54,29 @@ module.exports = class Componit{
     return output[0].code
   }
 
+  getComponentNames(){
+    return fs.readdirSync(this.source).map(n => {
+      n = n.replace(this.source, "")
+      n = n.replace(".js","")
+      return n;
+    }).filter(name => !name.startsWith("_") && !name.startsWith("."))
+  }
+
+  generateStyles(){
+    let names = this.getComponentNames()
+    let styledComponents = []
+
+    names.forEach(name => {
+      let m = require(path.join(this.source, name))
+      if(m.style){
+        styledComponents.push(m.style)
+      }
+    })
+
+    return css(styledComponents.join(" ")).min().toString()
+
+  }
+
   async bundle(){
 
     if(!this.runtime){
@@ -62,11 +85,7 @@ module.exports = class Componit{
 
     let source = this.source
 
-    let names = fs.readdirSync(this.source).map(n => {
-      n = n.replace(this.source, "")
-      n = n.replace(".js","")
-      return n;
-    }).filter(name => !name.startsWith("_") && !name.startsWith("."))
+    let names = this.getComponentNames()
     let out = {}
 
     await Promise.all(this.builds.map(async b => {
@@ -82,6 +101,7 @@ module.exports = class Componit{
       names.forEach(name => {
         let m = require(path.join(this.source, name))
         let ports = transports === '*' ? Object.keys(m) : transports
+        // Make sure all ports are included in this file before building
         let valid = (Array.isArray(ports) ? ports : [ports]).every(k => Object.keys(m).includes(k))
         if(valid){
           let imported, exported;
@@ -149,6 +169,7 @@ module.exports = class Componit{
       })
 
     }))
+    out['styles.css'] = this.generateStyles()
     return out;
   }
 }

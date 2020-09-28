@@ -8,7 +8,7 @@ let makeElement = ({ attributes, tag, inner }, props) => {
     // todo: some of these should be properties of the el, like .value and such
     el.setAttribute(k, attributes[k])
   })
-  render(el, inner.call({ html, svg }, props));
+  render(el, inner.call({ html, svg }, props, {html, svg}));
   return el;
 }
 

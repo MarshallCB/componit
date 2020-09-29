@@ -9,7 +9,7 @@
     "componit": "/cli.js"
   },
   "description": "Minimal isomorphic components",
-  "main": "src/index.js",
+  "main": "src/ssr.js",
   "license": "ISC",
   "author": {
     "name": "Marshall Brandt",
@@ -23,8 +23,8 @@
     "node": ">= 10"
   },
   "scripts": {
-    "use:npmReadme": "mv 'readme.md' 'docs/git.README.md' && mv 'docs/npm.README.md' 'README.md'",
-    "use:gitReadme": "mv 'README.md' 'docs/npm.README.md' && mv 'docs/git.README.md' 'readme.md'",
+    "use:npmReadme": "rm -f 'README.md' ; cp 'docs/npm.README.md' 'README.md'",
+    "use:gitReadme": "rm -f 'README.md' ; cp 'docs/git.README.md' 'README.md'",
     "prepublishOnly": "npm run use:npmReadme",
     "postpublish": "npm run use:gitReadme"
   },

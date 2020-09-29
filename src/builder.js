@@ -3,19 +3,18 @@ var path = require('path')
 var { rollup } = require('rollup')
 var { terser } = require('rollup-plugin-terser')
 var virtual = require('@rollup/plugin-virtual')
-var { js, css } = require('ucontent')
+var { js, css, render } = require('ucontent')
 var chokidar = require('chokidar')
 const fs = require('fs-extra')
 
 // TODO: different runtimes for each build type
 
 module.exports = class Componit{
-  constructor(source, destination, builds, long){
-    this.source = source
-    this.destination = destination
+  constructor(input, output, debug){
+    this.source = path.join(process.cwd(), input)
+    this.destination = path.join(process.cwd(), output)
     this.runtime = null
-    this.builds = builds;
-    this.minify = !long;
+    this.minify = !debug;
   }
 
   watch(){
@@ -32,6 +31,7 @@ module.exports = class Componit{
     Promise.resolve(this.bundle()).then(files => {
       Object.keys(files).forEach(p => {
         let d = path.join(this.destination, p)
+        console.log(d)
         fs.ensureFileSync(d)
         fs.writeFileSync(d, files[p])
       })
@@ -67,111 +67,149 @@ module.exports = class Componit{
     let styledComponents = []
 
     names.forEach(name => {
-      let m = require(path.join(this.source, name))
+      let p = path.join(this.source, name + ".js")
+      delete require.cache[p]
+      let m = require(p)
       if(m.style){
         styledComponents.push(m.style)
       }
     })
-
     return css(styledComponents.join(" ")).min().toString()
 
   }
 
-  async bundle(){
+  renderBundle(names){
+    let components = {}
+    // let source = this.source
+    names.forEach(name => {
+      // Clear require cache
+      let p = path.join(this.source, name + ".js")
+      delete require.cache[p]
+      let m = require(p)
+      let virtual_snippet
+      if(m.default && m.handler){
+        virtual_snippet = js`
+          import ${name}, { handler } from '${p}'
+          export default ${name};
+          export { handler };        
+        `.toString()
+      } else if (m.default){
+        virtual_snippet = js`
+        import ${name} from '${p}'
+        export default ${name};
+        export let handler = ()=>{};        
+      `.toString()
+      } else {
+        console.log("Generating empty component: " + name)
+        virtual_snippet = js`
+          export default ()=>{}
+          export let handler = ()=>{}
+        `.toString()
+      }
+      components[name + "--render.js"] = virtual_snippet
+    })
+    return components;
+  }
+  handlerBundle(names){
+    let components = {}
+    // let source = this.source
+    names.forEach(name => {
+      // Clear require cache
+      let p = path.join(this.source, name + ".js")
+      delete require.cache[p]
+      let m = require(p)
+      let virtual_snippet
+      if(m.handler){
+        virtual_snippet = js`
+          import { handler } from '${p}'
+          export { handler };        
+        `.toString()
+      } else {
+        virtual_snippet = js`
+          export let handler = ()=>{}
+        `.toString()
+      }
+      components[name + "--handler.js"] = virtual_snippet
+    })
+    return components;
+  }
+  elementBundle(names){
+    let components = {}
+    // let source = this.source
+    names.forEach(name => {
+      // Clear require cache
+      let p = path.join(this.source, name + ".js")
+      delete require.cache[p]
+      let m = require(p)
+      let virtual_snippet
+      if(m.default){
+        let ports = Object.keys(m)
+        ports.splice(ports.indexOf('default'), 1)
+        virtual_snippet = js`
+          import ${name}, { ${ports.join(', ')} } from '${p}'
+          export default ${name};
+          export { ${ports.join(', ')} };        
+        `.toString()
+      } else {
+        virtual_snippet = js`
+          export default ()=>{}
+        `.toString()
+      }
+      components[name + "--element.js"] = virtual_snippet
+    })
+    return components;
+  }
 
+  async bundleSingle(virtuals){
+    let components = virtuals;
+    let out = {}
+    let rollup_bundle = await rollup({
+      input: Object.keys(components),
+      output: "componit_output",
+      treeshake: {
+        moduleSideEffects: false
+      },
+      plugins: [
+        virtual({
+          ...components,
+          componit: this.runtime
+        }),
+        nodeResolve(),
+        ...(this.minify ? [terser()] : [])
+      ],
+      external(id,parent){
+        return false;
+      }
+    })
+    let { output } = await rollup_bundle.generate({
+      format: "esm",
+      chunkFileNames: ({name}) => `${name.replace("_virtual:","")}.js`,
+      entryFileNames: ({name}) => `${name.replace("_virtual:","").split("--").join('/')}.js`,
+    })
+    output.forEach(o => {
+      let name = o.fileName
+      out[name] = o.code.toString().replace(this.source,"")
+    })
+    return out;
+  }
+
+  async bundle(){
     if(!this.runtime){
       this.runtime = await this.virtualBrowser()
     }
-
-    let source = this.source
-
     let names = this.getComponentNames()
-    let out = {}
 
-    await Promise.all(this.builds.map(async b => {
-      let { transports, minify, external, extension } = {
-        transports: 'default',
-        extension:".js",
-        external(id,parent){
-          return false;
-        },
-        ...b
-      }
-      let components = {}
-      names.forEach(name => {
-        // Clear require cache
-        delete require.cache[path.join(this.source, name)]
-        let m = require(path.join(this.source, name))
-        let ports = transports === '*' ? Object.keys(m) : transports
-        // Make sure all ports are included in this file before building
-        let valid = (Array.isArray(ports) ? ports : [ports]).every(k => Object.keys(m).includes(k))
-        if(valid){
-          let imported, exported;
-          if(Array.isArray(ports)){
-            let dIndex = ports.indexOf('default')
-            if(dIndex != -1){
-              // has a default at ports[dIndex]
-              let d = ports.splice(dIndex, 1)
-              imported = `${name}, { ${ports.join(', ')} }`
-              exported = `export default ${name}; export { ${ports.join(', ')} }`
-            } else {
-              imported = `{ ${ports.join(', ')} }`
-              exported = `export { ${ports.join(', ')} }`
-            }
-          } else {
-            if(ports === 'default'){
-              imported = name;
-              exported = `export default ${name}`
-            } else {
-              imported = `{ ${ports} }`
-              exported = `export default ${ports}`
-            }
-          }
-          components[name] = js`
-            import ${ imported } from '${ path.join(this.source, name + ".js") }'
-            ${exported}
-          `.toString()
-        } else {
-          // Prevent 404's
-          components[name] =  js`
-            export default ()=>{}
-          `.toString()
-        }
-      })
-      let rollup_bundle = await rollup({
-        input: Object.keys(components),
-        output: "componit_comps",
-        treeshake: {
-          moduleSideEffects: false
-        },
-        plugins: [
-          virtual({
-            ...components,
-            componit: this.runtime || `export default ()=>{}`
-          }),
-          nodeResolve(),
-          ...(this.minify ? [terser()] : [])
-        ],
-        external
-      })
-      let { output } = await rollup_bundle.generate({
-        format: "esm",
-        chunkFileNames: ({name}) => `${name.replace("_virtual:","")}`,
-        entryFileNames: ({name}) => `${name.replace("_virtual:","")}/${extension}`,
-        manualChunks(id){
-          let a = names
-          let i = a.findIndex(n => id.includes(n))
-          let o = a[i] ? a[i] : "runtime.js"
-          return o
-        }
-      })
-      output.forEach(o => {
-        let name = o.fileName
-        out[name] = o.code.toString().replace(this.source,"")
-      })
+    let renders = await this.bundleSingle(this.renderBundle(names))
+    let handlers = await this.bundleSingle(this.handlerBundle(names))
+    let elements = await this.bundleSingle(this.elementBundle(names))
 
-    }))
-    out['styles.css'] = this.generateStyles()
-    return out;
+    // TODO: generate it.json based on hash values
+
+    return {
+      ...renders,
+      ...handlers,
+      ...elements,
+      'styles.css': this.generateStyles()
+    };
   }
 }

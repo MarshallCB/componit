@@ -12,29 +12,9 @@ sade('componit [input] [output]', true)
 .example('components www/components --watch')
 .example('source public/components -w -l')
 .option('-w, --watch', 'Watch source directory and rebuild on changes')
-.option('--long, -l', 'Disable minification', false)
+.option('--debug, -d', 'Debug (disable minification)', false)
 .action((input, output, opts) => {
-  let source = path.join(process.cwd(), input)
-  let destination = path.join(process.cwd(), output)
-  let builds = [
-    {
-      transports: "default",
-      extension: "render.js"
-    },
-    {
-      transports: "handler",
-      extension: "handler.js"
-    },
-    {
-      transports: "*", // todo: custom runtimes for each build type
-      extension: "it.js"
-    },
-    {
-      transports: "*", // todo: include saturater in file
-      extension: "element.js"
-    }
-  ]
-  let componit = new Componit(source, destination, builds, opts.l)
+  let componit = new Componit(input, output, opts.debug)
   if(opts.watch){
     componit.watch()
   } else {

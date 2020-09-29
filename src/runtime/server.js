@@ -5,7 +5,7 @@ let render = ({ attributes, tag, inner }, props) => html`
   ${raw`
     <${tag} ${Object.keys(attributes).map(k => raw`${k}="${attributes[k]}"`).join(" ") }> 
   `}
-    ${ inner.call({ html, svg }, props, { html, svg }) }
+    ${ inner.call({ html, svg, raw }, props, { html, svg, raw }) }
   ${raw`
     </${tag}>
   `}
@@ -15,7 +15,5 @@ let ssr = (id, definition) => (props) => {
   let def = transformDefinition(id, definition, props)
   return render(def, props)
 }
-
-ssr.handler = ()=>{}
 
 export default ssr

@@ -30,9 +30,10 @@ Write components definitions that export an SSR string and build to a collection
 - `it.json` : a manifest of the exported files
 - `styles.css` : a minified aggregation of each component's style
 - Per component:
-  - `render.js` : Client-side render function and handler | `default, handler`
-  - `element.js` : All exports of the component definition | `default, handler, style, *`
-  - `handler.js` : Saturation / Custom-Element-ish handler for SSR pages | `handler`
+  - `render.js` : Client-side render function and handler
+  - `ce.js` : Client-side render, handler, and component style
+  - `it.js` : Component for external use that relies on augm-it
+  - `element.js` : Standalone component for external use
 
 # Usage
 
@@ -79,7 +80,7 @@ $ componit [input] [output] [options]
 **Options**
 ```
 -w, --watch      Watch source directory and rebuild on changes
--d, --debug      Debug mode - disable minification  (default false)
+-l, --long       Disable minification  (default false)
 -v, --version    Displays current version
 -h, --help       Displays this message
 ```
@@ -88,7 +89,7 @@ $ componit [input] [output] [options]
 ```
 $ componit components www/components
 $ componit source public/components --watch
-$ componit source public/components -w -d
+$ componit source public/components -w -l
 ```
 
 # Strategies

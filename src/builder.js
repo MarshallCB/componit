@@ -122,11 +122,11 @@ module.exports = class Componit{
       if(m.handler){
         virtual_snippet = js`
           import { handler } from '${p}'
-          export { handler };        
+          export default handler;        
         `.toString()
       } else {
         virtual_snippet = js`
-          export let handler = ()=>{}
+          export default ()=>{}
         `.toString()
       }
       components[name + "--handler.js"] = virtual_snippet

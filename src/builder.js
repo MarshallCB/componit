@@ -31,7 +31,6 @@ module.exports = class Componit{
     Promise.resolve(this.bundle()).then(files => {
       Object.keys(files).forEach(p => {
         let d = path.join(this.destination, p)
-        console.log(d)
         fs.ensureFileSync(d)
         fs.writeFileSync(d, files[p])
       })
@@ -120,10 +119,24 @@ module.exports = class Componit{
       let m = require(p)
       let virtual_snippet
       if(m.handler){
-        virtual_snippet = js`
-          import { handler } from '${p}'
-          export default handler;        
-        `.toString()
+        if(m.handler.inner){
+          virtual_snippet = js`
+            import { runtime } from 'componit';
+            import { handler } from '${p}';
+            export default {
+              ...runtime,
+              ...handler,
+              inner(){
+                render(this.element, handler.inner.apply(this, arguments))
+              }
+            };
+          `.toString()
+        } else {
+          virtual_snippet = js`
+            import { handler } from '${p}'
+            export default handler;        
+          `.toString()
+        }
       } else {
         virtual_snippet = js`
           export default ()=>{}
@@ -204,11 +217,10 @@ module.exports = class Componit{
     let elements = await this.bundleSingle(this.elementBundle(names))
 
     // TODO: generate it.json based on hash values
-
     return {
       ...renders,
-      ...handlers,
       ...elements,
+      ...handlers,
       'styles.css': this.generateStyles()
     };
   }

@@ -5,7 +5,7 @@ let render = ({ attributes, tag, inner }, props) => html`
   ${raw`
     <${tag} ${Object.keys(attributes).map(k => raw`${k}="${attributes[k]}"`).join(" ") }> 
   `}
-    ${ inner.call({ html, svg, raw }, props, { html, svg, raw }) }
+    ${ inner.call({ html, svg, raw }, props) }
   ${raw`
     </${tag}>
   `}

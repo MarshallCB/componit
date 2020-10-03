@@ -23,8 +23,7 @@ module.exports = class Componit{
       ignoreInitial: true
     })
     this.watcher.on('all', (e, p) => {
-      console.log(e, p)
-      this.build()
+      this.build([p.replace(this.source, "").replace('.js', "").substr(1)])
     })
   }
 
@@ -162,7 +161,7 @@ module.exports = class Componit{
     return components;
   }
 
-  async bundleSingle(virtuals){
+  async bundleSingle(names, virtuals, file_name){
     let components = virtuals;
     let out = {}
     let rollup_bundle = await rollup({
@@ -187,7 +186,7 @@ module.exports = class Componit{
     let { output } = await rollup_bundle.generate({
       format: "esm",
       chunkFileNames: ({name}) => `${name.replace("_virtual:","")}.js`,
-      entryFileNames: ({name}) => `${name.replace("_virtual:","").split("--").join('/')}.js`,
+      entryFileNames: ({name}) => `${name.replace("_virtual:","").split("--").join('/')}.js`
     })
     output.forEach(o => {
       let name = o.fileName
@@ -196,11 +195,12 @@ module.exports = class Componit{
     return out;
   }
 
-  async bundle(){
+  async bundle(which = null){
     if(!this.runtime){
       this.runtime = await this.virtualBrowser()
     }
-    let sources = this.getComponentNames().map(name => {
+    let names = which || this.getComponentNames()
+    let sources = names.map(name => {
       // Clear require cache
       let p = path.join(this.source, name + ".js")
       delete require.cache[p]
@@ -208,14 +208,13 @@ module.exports = class Componit{
       return { m, name, p }
     })
 
-    let renders = await this.bundleSingle(this.renderBundle(sources))
-    let handlers = await this.bundleSingle(this.handlerBundle(sources))
-    let elements = await this.bundleSingle(this.elementBundle(sources))
+    // let renders = await this.bundleSingle(this.renderBundle(sources))
+    let elements = await this.bundleSingle(names, this.elementBundle(sources), "element.js")
+    let handlers = await this.bundleSingle(names, this.handlerBundle(sources), "handler.js")
 
     // TODO: generate it.json based on hash values
-    console.log('bundles are complete')
     return {
-      ...renders,
+      ...elements,
       ...handlers,
       'styles.css': this.generateStyles()
     };

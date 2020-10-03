@@ -23,25 +23,27 @@ module.exports = class Componit{
       ignoreInitial: true
     })
     this.watcher.on('all', (e, p) => {
+      console.log(e, p)
       this.build()
     })
   }
 
-  build(){
-    Promise.resolve(this.bundle()).then(files => {
+  build(which = null){
+    Promise.resolve(this.bundle(which)).then(files => {
       Object.keys(files).forEach(p => {
         let d = path.join(this.destination, p)
         fs.ensureFileSync(d)
         fs.writeFileSync(d, files[p])
       })
       console.log(`componit: generated ${ Object.keys(files).length } files`)
-    })
+    }).catch(e => console.log(e))
   }
 
   async virtualBrowser(){
     let browser_bundle = await rollup({
       input: path.join(__dirname, './runtime/browser.js'),
       output: "y",
+      cache: false,
       plugins: [
         nodeResolve(),
         ...(this.minify ? [terser()] : [])
@@ -77,59 +79,48 @@ module.exports = class Componit{
 
   }
 
-  renderBundle(names){
+  renderBundle(sources){
     let components = {}
     // let source = this.source
-    names.forEach(name => {
-      // Clear require cache
-      let p = path.join(this.source, name + ".js")
+    sources.forEach(({name, p}) => {
+      let virtual_snippet
       delete require.cache[p]
       let m = require(p)
-      let virtual_snippet
-      if(m.default && m.handler){
-        virtual_snippet = js`
-          import ${name}, { handler } from '${p}'
-          export default ${name};
-          export { handler };        
-        `.toString()
-      } else if (m.default){
+      if (m.default){
         virtual_snippet = js`
         import ${name} from '${p}'
-        export default ${name};
-        export let handler = ()=>{};        
+        export default ${name};      
       `.toString()
       } else {
         console.log("Generating empty component: " + name)
         virtual_snippet = js`
           export default ()=>{}
-          export let handler = ()=>{}
         `.toString()
       }
       components[name + "--render.js"] = virtual_snippet
     })
     return components;
   }
-  handlerBundle(names){
+  handlerBundle(sources){
     let components = {}
     // let source = this.source
-    names.forEach(name => {
-      // Clear require cache
-      let p = path.join(this.source, name + ".js")
+    sources.forEach(({name, p}) => {
+      let virtual_snippet
       delete require.cache[p]
       let m = require(p)
-      let virtual_snippet
       if(m.handler){
         if(m.handler.inner){
           virtual_snippet = js`
             import { runtime } from 'componit';
             import { handler } from '${p}';
-            export default {
+            let enhanced = {
               ...runtime,
               ...handler,
               inner(){
                 render(this.element, handler.inner.apply(this, arguments))
               }
             };
+            export default enhanced;
           `.toString()
         } else {
           virtual_snippet = js`
@@ -146,15 +137,13 @@ module.exports = class Componit{
     })
     return components;
   }
-  elementBundle(names){
+  elementBundle(sources){
     let components = {}
     // let source = this.source
-    names.forEach(name => {
-      // Clear require cache
-      let p = path.join(this.source, name + ".js")
+    sources.forEach(({name, p}) => {
+      let virtual_snippet
       delete require.cache[p]
       let m = require(p)
-      let virtual_snippet
       if(m.default){
         let ports = Object.keys(m)
         ports.splice(ports.indexOf('default'), 1)
@@ -182,6 +171,7 @@ module.exports = class Componit{
       treeshake: {
         moduleSideEffects: false
       },
+      cache: false,
       plugins: [
         virtual({
           ...components,
@@ -210,16 +200,22 @@ module.exports = class Componit{
     if(!this.runtime){
       this.runtime = await this.virtualBrowser()
     }
-    let names = this.getComponentNames()
+    let sources = this.getComponentNames().map(name => {
+      // Clear require cache
+      let p = path.join(this.source, name + ".js")
+      delete require.cache[p]
+      let m = require(p)
+      return { m, name, p }
+    })
 
-    let renders = await this.bundleSingle(this.renderBundle(names))
-    let handlers = await this.bundleSingle(this.handlerBundle(names))
-    let elements = await this.bundleSingle(this.elementBundle(names))
+    let renders = await this.bundleSingle(this.renderBundle(sources))
+    let handlers = await this.bundleSingle(this.handlerBundle(sources))
+    let elements = await this.bundleSingle(this.elementBundle(sources))
 
     // TODO: generate it.json based on hash values
+    console.log('bundles are complete')
     return {
       ...renders,
-      ...elements,
       ...handlers,
       'styles.css': this.generateStyles()
     };

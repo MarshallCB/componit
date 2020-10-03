@@ -6,7 +6,7 @@
     "url": "git+https://github.com/marshallcb/componit.git"
   },
   "bin": {
-    "componit": "/cli.js"
+    "componit": "./cli.js"
   },
   "description": "Minimal isomorphic components",
   "main": "src/ssr.js",

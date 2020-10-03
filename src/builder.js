@@ -23,12 +23,12 @@ module.exports = class Componit{
       ignoreInitial: true
     })
     this.watcher.on('all', (e, p) => {
-      this.build([p.replace(this.source, "").replace('.js', "").substr(1)])
+      this.build()
     })
   }
 
-  build(which = null){
-    Promise.resolve(this.bundle(which)).then(files => {
+  build(){
+    Promise.resolve(this.bundle()).then(files => {
       Object.keys(files).forEach(p => {
         let d = path.join(this.destination, p)
         fs.ensureFileSync(d)
@@ -195,11 +195,11 @@ module.exports = class Componit{
     return out;
   }
 
-  async bundle(which = null){
+  async bundle(){
     if(!this.runtime){
       this.runtime = await this.virtualBrowser()
     }
-    let names = which || this.getComponentNames()
+    let names = this.getComponentNames()
     let sources = names.map(name => {
       // Clear require cache
       let p = path.join(this.source, name + ".js")

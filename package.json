@@ -16,9 +16,6 @@
     "email": "hey@m4r.sh",
     "url": "https://m4r.sh"
   },
-  "files": [
-    "src"
-  ],
   "engines": {
     "node": ">= 10"
   },

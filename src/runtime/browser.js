@@ -1,4 +1,5 @@
 import { render, html, svg } from 'uhtml';
+import css from 'plain-tag';
 import { transformDefinition } from './iso.js'
 
 function raw(str){
@@ -9,35 +10,27 @@ function raw(str){
 // TODO: Attach handler on fresh render
 // TODO: componit should default export for SSR, but other than that, inner should be separate
 // IF inner() is exported PER component, that definition could be shared across handler AND fresh render
-let makeElement = ({ attributes, tag, inner }, props) => {
-  let el = document.createElement(tag);
+let makeElement = (def, props) => {
+  let el = document.createElement(def.tag);
   el.props = props;
-  Object.keys(attributes).forEach(k => {
+  Object.keys(def.attributes).forEach(k => {
     // todo: some of these should be properties of the el, like .value and such
-    el.setAttribute(k, attributes[k])
+    el.setAttribute(k, def.attributes[k])
   })
-  render(el, inner.call({ html, svg, raw }, props));
+  if(def.inner){
+    render(el, def.inner.call(def, props));
+  }
   return el;
 }
 
-let browser = (id, definition) => (props) => {
-  let def = transformDefinition(id, definition, props)
+let createComponent = (id, definition) => (props) => {
+  let def = transformDefinition(id, {
+    tag: `it-${id}`, // Default to custom-element
+    attributes: {}, // Default to non-null object
+    ...definition
+  }, props)
   return makeElement(def, props)
 }
 
-window.html = html;
-window.render = render;
-window.svg = svg;
-
-export default browser
-export let runtime = { html, svg, raw }
-
-/*
-  html() { return render(this.element, html.apply(null, arguments)); },
-  svg() { return render(this.element, svg.apply(null, arguments)); },
-  raw(str){
-    var template = document.createElement('template')
-    template.innerHTML = str;
-    return template.content;
-  },
-*/
+export default createComponent
+export { html, svg, raw, css, render }

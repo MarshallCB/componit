@@ -9,7 +9,7 @@
     "componit": "./cli.js"
   },
   "description": "Minimal isomorphic components",
-  "main": "src/ssr.js",
+  "main": "src/runtime/server.js",
   "license": "ISC",
   "author": {
     "name": "Marshall Brandt",
@@ -32,10 +32,12 @@
     "chokidar": "^3.4.2",
     "esm": "^3.2.25",
     "fs-extra": "^9.0.1",
+    "plain-tag": "^0.1.3",
     "rollup": "2.21.0",
     "rollup-plugin-terser": "6.1.0",
     "sade": "^1.7.3",
     "ucontent": "^2.0.0",
-    "uhtml": "^2.1.2"
+    "uhtml": "^2.1.2",
+    "wicked-elements": "^3.1.1"
   }
 }

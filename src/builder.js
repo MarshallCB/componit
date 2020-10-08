@@ -2,6 +2,7 @@ var {nodeResolve} = require('@rollup/plugin-node-resolve')
 var path = require('path')
 var { rollup } = require('rollup')
 var { terser } = require('rollup-plugin-terser')
+var replace = require('@rollup/plugin-replace')
 var virtual = require('@rollup/plugin-virtual')
 var { js, css, render } = require('ucontent')
 var chokidar = require('chokidar')
@@ -38,7 +39,7 @@ module.exports = class Componit{
     }).catch(e => console.log(e))
   }
 
-  async virtualBrowser(){
+  async browserComponit(){
     let browser_bundle = await rollup({
       input: path.join(__dirname, './runtime/browser.js'),
       output: "y",
@@ -54,6 +55,36 @@ module.exports = class Componit{
     return output[0].code
   }
 
+  async browserSaturation(sources){
+    let handlerIds = []
+    sources.forEach(({name, p}) => {
+      delete require.cache[p]
+      let m = require(p)
+      if(m.handler){
+        handlerIds.push(name)
+      } 
+    })
+    let browser_bundle = await rollup({
+      input: path.join(__dirname, './runtime/auto-saturate.js'),
+      output: "z",
+      cache: false,
+      plugins: [
+        nodeResolve(),
+        ...(this.minify ? [terser()] : []),
+        replace({
+          __handler_id_array__: `[${handlerIds.map(n => `'${n}'`).join(",")}]`
+        })
+      ],
+      external(id){
+        return id.includes('componit')
+      }
+    })
+    let { output } = await browser_bundle.generate({
+      format: "iife"
+    })
+    return output[0].code
+  }
+  
   getComponentNames(){
     return fs.readdirSync(this.source).map(n => {
       n = n.replace(this.source, "")
@@ -108,32 +139,25 @@ module.exports = class Componit{
       delete require.cache[p]
       let m = require(p)
       if(m.handler){
-        if(m.handler.inner){
-          virtual_snippet = js`
-            import { runtime } from 'componit';
-            import { handler } from '${p}';
-            let enhanced = {
-              ...runtime,
-              ...handler,
-              inner(){
-                render(this.element, handler.inner.apply(this, arguments))
-              }
-            };
-            export default enhanced;
-          `.toString()
-        } else {
-          virtual_snippet = js`
-            import { handler } from '${p}'
-            export default handler;        
-          `.toString()
-        }
+        virtual_snippet = js`
+          import { handler } from '${p}'
+          import { render } from 'componit'
+          if(handler.inner){
+            let original = handler.inner
+            handler.inner = function(){
+              render(this.element, original.apply(this, arguments))
+            }
+          }
+          export default handler;
+        `.toString()
       } else {
         virtual_snippet = js`
           export default ()=>{}
         `.toString()
       }
-      components[name + "--handler.js"] = virtual_snippet
+      components[`${name}--${name}-handler.js`] = virtual_snippet
     })
+
     return components;
   }
   elementBundle(sources){
@@ -156,7 +180,7 @@ module.exports = class Componit{
           export default ()=>{}
         `.toString()
       }
-      components[name + "--element.js"] = virtual_snippet
+      components[`${name}--${name}-element.js`] = virtual_snippet
     })
     return components;
   }
@@ -197,7 +221,7 @@ module.exports = class Componit{
 
   async bundle(){
     if(!this.runtime){
-      this.runtime = await this.virtualBrowser()
+      this.runtime = await this.browserComponit()
     }
     let names = this.getComponentNames()
     let sources = names.map(name => {
@@ -211,12 +235,14 @@ module.exports = class Componit{
     // let renders = await this.bundleSingle(this.renderBundle(sources))
     let elements = await this.bundleSingle(names, this.elementBundle(sources), "element.js")
     let handlers = await this.bundleSingle(names, this.handlerBundle(sources), "handler.js")
+    let saturate = await this.browserSaturation(sources)
 
     // TODO: generate it.json based on hash values
     return {
       ...elements,
       ...handlers,
-      'styles.css': this.generateStyles()
+      'styles.css': this.generateStyles(),
+      'it.js': saturate
     };
   }
 }

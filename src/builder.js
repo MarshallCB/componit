@@ -139,17 +139,22 @@ module.exports = class Componit{
       delete require.cache[p]
       let m = require(p)
       if(m.handler){
-        virtual_snippet = js`
-          import { handler } from '${p}'
-          import { render } from 'componit'
-          if(handler.inner){
+        if(m.handler.inner){
+          virtual_snippet = js`
+            import { handler } from '${p}'
+            import { render } from 'componit'
             let original = handler.inner
             handler.inner = function(){
               render(this.element, original.apply(this, arguments))
             }
-          }
-          export default handler;
-        `.toString()
+            export default handler;
+          `.toString()
+        } else {
+          virtual_snippet = js`
+            import { handler } from '${p}'
+            export default handler;
+          `.toString()
+        }
       } else {
         virtual_snippet = js`
           export default ()=>{}

@@ -1,6 +1,6 @@
 import { render, html, svg } from 'uhtml';
-import css from 'plain-tag';
 import { transformDefinition } from './iso.js'
+let css = String.raw
 
 function raw(str){
   var template = document.createElement('template')

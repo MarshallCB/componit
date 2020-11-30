@@ -1,253 +1,108 @@
-var {nodeResolve} = require('@rollup/plugin-node-resolve')
 var path = require('path')
-var { rollup } = require('rollup')
-var { terser } = require('rollup-plugin-terser')
-var replace = require('@rollup/plugin-replace')
-var virtual = require('@rollup/plugin-virtual')
-var { js, css, render } = require('ucontent')
-var chokidar = require('chokidar')
-const fs = require('fs-extra')
+var jeye = require('jeye')
+require = require("esm")(module)
+var { generateStyles } = require('./builders/aggregate/style')
+var { generateRuntime } = require('./builders/aggregate/runtime')
+var { generateRender } = require('./builders/single/render')
+var { generateStyle } = require('./builders/single/style')
+const { writeFile, readFile, bytesize } = require('./utils')
+var { blue, green, bold, underline, cyan, dim } = require('kleur')
+const { generateHandler } = require('./builders/single/handler')
+
 
 // TODO: different runtimes for each build type
 
+let jeye_options = { ignore: /(^|[\/\\])[\._]./ }
+
 module.exports = class Componit{
-  constructor(input, output, debug){
-    this.source = path.join(process.cwd(), input)
-    this.destination = path.join(process.cwd(), output)
-    this.runtime = null
+  constructor(source, output, debug){
+    this.source = source
+    this.output = output;
     this.minify = !debug;
   }
 
   watch(){
     this.build()
-    this.watcher = chokidar.watch(this.source, {
-      ignoreInitial: true
-    })
-    this.watcher.on('all', (e, p) => {
-      this.build()
-    })
-  }
-
-  build(){
-    Promise.resolve(this.bundle()).then(files => {
-      Object.keys(files).forEach(p => {
-        let d = path.join(this.destination, p)
-        fs.ensureFileSync(d)
-        fs.writeFileSync(d, files[p])
+    jeye.watch(this.source, jeye_options)
+      .on("change", async (p, info, stale) => {
+        stale.forEach(stalePath => {
+          delete require.cache[path.join(process.cwd(), stalePath)]
+        });
+        await this.single(p, info)
       })
-      console.log(`componit: generated ${ Object.keys(files).length } files`)
-    }).catch(e => console.log(e))
+      .on("aggregate", async (targets, stale) => {
+        stale.forEach(stalePath => {
+          delete require.cache[path.join(process.cwd(), stalePath)]
+        });
+        await this.aggregate(targets)
+      })
   }
 
-  async browserComponit(){
-    let browser_bundle = await rollup({
-      input: path.join(__dirname, './runtime/browser.js'),
-      output: "y",
-      cache: false,
-      plugins: [
-        nodeResolve(),
-        ...(this.minify ? [terser()] : [])
+  async write(id, data){
+    await writeFile(path.join(this.output, id), data)
+  }
+
+  async single(p, info){
+    let [ render, style, handler ] = await Promise.all([
+      generateRender(p, info),
+      generateStyle(p, info),
+      generateHandler(p, info)
+    ])
+    await Promise.all([
+      this.write(info.id, render),
+      this.write(info.id.replace('.js','/style.css'), style),
+      this.write(info.id.replace('.js','/handler.js'), handler)
+    ])
+
+    this.prettyPrint({
+      title: path.basename(p),
+      details: [
+        { label: "Render", content: bytesize(render) },
+        { label: "Style", content: bytesize(style) },
+        { label: "Handler", content: bytesize(handler) }
       ]
     })
-    let { output } = await browser_bundle.generate({
-      format: "esm"
-    })
-    return output[0].code
-  }
-
-  async browserSaturation(sources){
-    let handlerIds = []
-    sources.forEach(({name, p}) => {
-      delete require.cache[p]
-      let m = require(p)
-      if(m.handler){
-        handlerIds.push(name)
-      } 
-    })
-    let browser_bundle = await rollup({
-      input: path.join(__dirname, './runtime/auto-saturate.js'),
-      output: "z",
-      cache: false,
-      plugins: [
-        nodeResolve(),
-        ...(this.minify ? [terser()] : []),
-        replace({
-          __handler_id_array__: `[${handlerIds.map(n => `'${n}'`).join(",")}]`
-        })
-      ],
-      external(id){
-        return id.includes('componit')
-      }
-    })
-    let { output } = await browser_bundle.generate({
-      format: "iife"
-    })
-    return output[0].code
-  }
-  
-  getComponentNames(){
-    return fs.readdirSync(this.source).map(n => {
-      n = n.replace(this.source, "")
-      n = n.replace(".js","")
-      return n;
-    }).filter(name => !name.startsWith("_") && !name.startsWith("."))
-  }
-
-  generateStyles(){
-    let names = this.getComponentNames()
-    let styledComponents = []
-
-    names.forEach(name => {
-      let p = path.join(this.source, name + ".js")
-      delete require.cache[p]
-      let m = require(p)
-      if(m.style){
-        styledComponents.push(m.style)
-      }
-    })
-    return css(styledComponents.join(" ")).min().toString()
 
   }
 
-  renderBundle(sources){
-    let components = {}
-    // let source = this.source
-    sources.forEach(({name, p}) => {
-      let virtual_snippet
-      delete require.cache[p]
-      let m = require(p)
-      if (m.default){
-        virtual_snippet = js`
-        import ${name} from '${p}'
-        export default ${name};      
-      `.toString()
-      } else {
-        console.log("Generating empty component: " + name)
-        virtual_snippet = js`
-          export default ()=>{}
-        `.toString()
-      }
-      components[name + "--render.js"] = virtual_snippet
-    })
-    return components;
-  }
-  handlerBundle(sources){
-    let components = {}
-    // let source = this.source
-    sources.forEach(({name, p}) => {
-      let virtual_snippet
-      delete require.cache[p]
-      let m = require(p)
-      if(m.handler){
-        if(m.handler.inner){
-          virtual_snippet = js`
-            import { handler } from '${p}'
-            import { render } from 'componit'
-            let original = handler.inner
-            handler.inner = function(){
-              render(this.element, original.apply(this, arguments))
-            }
-            export default handler;
-          `.toString()
-        } else {
-          virtual_snippet = js`
-            import { handler } from '${p}'
-            export default handler;
-          `.toString()
-        }
-      } else {
-        virtual_snippet = js`
-          export default ()=>{}
-        `.toString()
-      }
-      components[`${name}--${name}-handler.js`] = virtual_snippet
-    })
-
-    return components;
-  }
-  elementBundle(sources){
-    let components = {}
-    // let source = this.source
-    sources.forEach(({name, p}) => {
-      let virtual_snippet
-      delete require.cache[p]
-      let m = require(p)
-      if(m.default){
-        let ports = Object.keys(m)
-        ports.splice(ports.indexOf('default'), 1)
-        virtual_snippet = js`
-          import ${name}, { ${ports.join(', ')} } from '${p}'
-          export default ${name};
-          export { ${ports.join(', ')} };        
-        `.toString()
-      } else {
-        virtual_snippet = js`
-          export default ()=>{}
-        `.toString()
-      }
-      components[`${name}--${name}-element.js`] = virtual_snippet
-    })
-    return components;
-  }
-
-  async bundleSingle(names, virtuals, file_name){
-    let components = virtuals;
-    let out = {}
-    let rollup_bundle = await rollup({
-      input: Object.keys(components),
-      output: "componit_output",
-      treeshake: {
-        moduleSideEffects: false
-      },
-      cache: false,
-      plugins: [
-        virtual({
-          ...components,
-          componit: this.runtime
-        }),
-        nodeResolve(),
-        ...(this.minify ? [terser()] : [])
-      ],
-      external(id,parent){
-        return false;
-      }
-    })
-    let { output } = await rollup_bundle.generate({
-      format: "esm",
-      chunkFileNames: ({name}) => `${name.replace("_virtual:","")}.js`,
-      entryFileNames: ({name}) => `${name.replace("_virtual:","").split("--").join('/')}.js`
-    })
-    output.forEach(o => {
-      let name = o.fileName
-      out[name] = o.code.toString().replace(this.source,"")
-    })
-    return out;
-  }
-
-  async bundle(){
-    if(!this.runtime){
-      this.runtime = await this.browserComponit()
+  prettyPrint({ title, details }){
+    if(this.verbose){
+      console.log(`${blue('⎔')}  ${bold(title)}  ${
+        details.map(({label, content}) =>
+          `${dim(label)} ${green().bold(content)}`
+        ).join(" ")
+      }`)
     }
-    let names = this.getComponentNames()
-    let sources = names.map(name => {
-      // Clear require cache
-      let p = path.join(this.source, name + ".js")
-      delete require.cache[p]
-      let m = require(p)
-      return { m, name, p }
+  }
+
+  async aggregate(targets){
+    let [ styles, runtime ] = await Promise.all([
+      generateStyles(targets),
+      generateRuntime(targets)
+    ])
+    await Promise.all([
+      this.write('styles.css', styles),
+      this.write('it.js', runtime)
+    ])
+
+    this.prettyPrint({
+      title: "Aggregate",
+      details: [
+        { label: "it.js", content: bytesize(runtime) },
+        { label: "styles.css", content: bytesize(styles) }
+      ]
     })
 
-    // let renders = await this.bundleSingle(this.renderBundle(sources))
-    let elements = await this.bundleSingle(names, this.elementBundle(sources), "element.js")
-    let handlers = await this.bundleSingle(names, this.handlerBundle(sources), "handler.js")
-    let saturate = await this.browserSaturation(sources)
-
-    // TODO: generate it.json based on hash values
-    return {
-      ...elements,
-      ...handlers,
-      'styles.css': this.generateStyles(),
-      'it.js': saturate
-    };
   }
+
+  async build(){
+    let targets = await jeye.targets(this.source, jeye_options)
+    await Promise.all([
+      ...Object.keys(targets).map(async p => {
+        await this.single(p, targets[p])
+      }),
+      this.aggregate(targets)
+    ])
+  }
+
 }

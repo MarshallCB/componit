@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-require = require("esm")(module)
 const sade = require('sade');
 const pkg = require('./package.json')
 const path = require('path')
@@ -13,6 +12,7 @@ sade('componit [input] [output]', true)
 .example('source public/components -w -d')
 .option('-w, --watch', 'Watch source directory and rebuild on changes')
 .option('--debug, -d', 'Debug mode - disable minification', false)
+.option('--verbose, -v', 'Verbose mode - print file information', false)
 .action((input, output, opts) => {
   let componit = new Componit(input, output, opts.debug)
   if(opts.watch){
@@ -23,3 +23,16 @@ sade('componit [input] [output]', true)
   // Program handler
 })
 .parse(process.argv);
+
+//  * // const spinner = ora({
+  // text: "componit",
+  // spinner: {
+  //   interval: 200,
+  //   frames: ['⬡','⬡','⬡','⎔']
+  // }
+// }).start();
+// let counter = 0
+// let colors = ['blue','blueBright', 'blue', 'cyan', 'cyanBright', 'cyan']
+// setInterval(() => {
+//   spinner.color = colors[counter++ % colors.length]
+// }, 200)

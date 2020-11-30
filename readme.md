@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/marshallcb/componit/raw/master/componit.png" alt="componit" width="100" />
+  <img src="https://github.com/marshallcb/componit/raw/main/componit.png" alt="componit" width="100" />
 </div>
 
 <h1 align="center">componit</h1>

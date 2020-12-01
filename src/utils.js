@@ -17,7 +17,8 @@ export async function writeFile(p, data){
 
 export function freshRequire(p){
   p = path.join(process.cwd(), p)
-  delete require.cache[p]
+  // console.log("BEFORE ---- ")
+  // delete require.cache[p]
   return require(p)
 }
 

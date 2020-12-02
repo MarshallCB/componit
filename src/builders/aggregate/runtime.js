@@ -25,7 +25,7 @@ export async function generateRuntime(targets){
     runtime_template = (await minify(runtime_template)).code
   }
   let source = runtime_template.replace('__handlers__', generateHandlers(targets))
-  // let { code } = await minify(source)
+  let { code } = await minify(source)
   return source
 }
 

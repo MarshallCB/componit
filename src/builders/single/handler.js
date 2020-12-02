@@ -18,7 +18,7 @@ const local_componit = ({ id }) => ({
   }
 })
 
-let rollup_options = (component, id) => {
+let rollup_options = ({ contents, exports, id}) => {
   return {
     input: 'virt',
     output: { format: 'esm' },
@@ -30,8 +30,8 @@ let rollup_options = (component, id) => {
     },
     plugins: [
       virtual({
-        virt: `export {handler, it} from 'it'`,
-        it: component,
+        virt: exports.includes('handler') && exports.includes('it') ? `export {handler, it} from 'it'` : 'export let handler={};export let it=null;',
+        it: contents.toString('utf8'),
         componit: `
           import { html, svg, raw } from 'external-componit'
           let css = ()=>{}
@@ -51,7 +51,7 @@ let rollup_options = (component, id) => {
   }
 }
 
-export async function generateHandler(p, { contents, id, exports }){
-  let source = await rollup(rollup_options(contents.toString('utf8'), id))
+export async function generateHandler(p, info){
+  let source = await rollup(rollup_options(info))
   return source //(await minify(source)).code
 }

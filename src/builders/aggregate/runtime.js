@@ -34,7 +34,7 @@ function generateHandlers(targets){
   Object.keys(targets).forEach(p => {
     let { handler, it} = freshRequire(p)
     if(handler && it){
-      handlers[it] = '.' + targets[p].id + '/handler.js';
+      handlers[it] = '.' + targets[p].id.replace('.js','/handler.js');
     }
   })
   return parseObject(handlers)

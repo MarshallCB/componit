@@ -13,8 +13,8 @@ function renderProxy(fn){
     return result
   }
 }
-html.node = renderProxy(html.node)
-svg.node = renderProxy(html.node)
+html.element = renderProxy(html.node)
+svg.element = renderProxy(html.node)
 
 function raw(str){
   var template = document.createElement('template')

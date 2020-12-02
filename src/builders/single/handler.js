@@ -30,7 +30,7 @@ let rollup_options = ({ contents, exports, id}) => {
     },
     plugins: [
       virtual({
-        virt: exports.includes('handler') && exports.includes('it') ? `export {handler, it} from 'it'` : 'export let handler={};export let it=null;',
+        virt: exports.includes('handler') ? `export {handler as default} from 'it'` : 'export default {};',
         it: contents.toString('utf8'),
         componit: `
           import { html, svg, raw } from 'external-componit'

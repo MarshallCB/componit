@@ -6,7 +6,7 @@ var { generateRuntime } = require('./builders/aggregate/runtime')
 var { generateRender } = require('./builders/single/render')
 var { generateStyle } = require('./builders/single/style')
 const { writeFile, readFile, bytesize } = require('./utils')
-var { blue, green, bold, underline, cyan, dim } = require('kleur')
+var { blue, green, bold, underline, cyan, magenta, dim } = require('kleur')
 const { generateHandler } = require('./builders/single/handler')
 
 
@@ -45,6 +45,7 @@ module.exports = class Componit{
     ])
     await Promise.all([
       this.write(info.id, render),
+      this.write(info.id.replace('.js','/render.js'), render),
       this.write(info.id.replace('.js','/style.css'), style),
       this.write(info.id.replace('.js','/handler.js'), handler)
     ])
@@ -62,7 +63,7 @@ module.exports = class Componit{
 
   prettyPrint({ title, details }){
     if(!this.silent){
-      console.log(`${blue('⎔')}  ${bold(title)}  ${
+      console.log(`${blue('ᕳXᕲ')} ${bold(title)} ${
         details.map(({label, content}) =>
           `${dim(label)} ${green().bold(content)}`
         ).join(" ")

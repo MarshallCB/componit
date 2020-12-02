@@ -1,7 +1,6 @@
 var { readFile, freshRequire, writeFile, rollup, bytesize, parseObject } = require('../../utils')
 var path = require('path')
 const rollupStream = require('@rollup/stream');
-var replace = require('@rollup/plugin-replace')
 const virtual = require('@rollup/plugin-virtual');
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 const { minify } = require('terser')
@@ -25,20 +24,29 @@ export async function generateRuntime(targets){
     })
     runtime_template = (await minify(runtime_template)).code
   }
-  console.log('runtime: ' + (Date.now() - runtime_start)+'ms')
   let source = runtime_template.replace('__handlers__', generateHandlers(targets))
-  return (await minify(source)).code
+  // let { code } = await minify(source)
+  return source
 }
-
-
 
 function generateHandlers(targets){
   let handlers = {}
   Object.keys(targets).forEach(p => {
     let { handler, it} = freshRequire(p)
     if(handler && it){
-      handlers[it] = handler;
+      handlers[it] = '.' + targets[p].id + '/handler.js';
     }
   })
   return parseObject(handlers)
 }
+
+// function generateHandlers(targets){
+//   let handlers = {}
+//   Object.keys(targets).forEach(p => {
+//     let { handler, it} = freshRequire(p)
+//     if(handler && it){
+//       handlers[it] = handler;
+//     }
+//   })
+//   return parseObject(handlers)
+// }

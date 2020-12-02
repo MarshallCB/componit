@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "8.1.0",
-    "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-virtual": "^2.0.3",
     "brotli-size": "^4.0.0",
     "csso": "^4.1.1",
@@ -38,13 +37,10 @@
     "rollup": "2.21.0",
     "rollup-plugin-skypin": "^0.1.0",
     "sade": "^1.7.3",
-    "skypin": "^1.0.2",
     "terser": "^5.5.0",
     "uhtml": "^2.1.2",
     "uline": "0.0.2",
-    "wicked-elements": "^3.1.1"
-  },
-  "devDependencies": {
+    "wicked-elements": "^3.1.1",
     "@rollup/stream": "^1.1.0"
   }
 }

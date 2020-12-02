@@ -8,9 +8,9 @@ const { minify } = require('terser')
 const local_componit = ({ id }) => ({
   async resolveId(dependency){
     if(!dependency.startsWith('.')){
-      if(dependency === 'componit'){
+      if(dependency === 'external-componit'){
         return {
-          id: pathDepth(id) + 'componit.js',
+          id: pathDepth(id) + 'runtime.js',
           external: true
         }
       }
@@ -30,8 +30,14 @@ let rollup_options = (component, id) => {
     },
     plugins: [
       virtual({
+        // TODO: export all existing exports except for style & handler & (it?)
         virt: `export {default} from 'it'`,
-        it: component
+        it: component,
+        componit: `
+          import { html, svg, render } from 'external-componit'
+          let css=()=>{}
+          export { css, html, svg, render }
+        `
       }),
       local_componit({ id }),
       skypin({ 

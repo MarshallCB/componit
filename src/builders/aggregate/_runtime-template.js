@@ -1,8 +1,9 @@
 import { render, html, svg } from 'uhtml';
-import { define, upgrade } from 'wicked-elements'
+import { define, defineAsync, upgrade } from 'wicked-elements'
 
 let definitions = __handlers__
-Object.keys(definitions).forEach(it => define(`.${it},${it},[is="${it}"]`, definitions[it]))
+// Object.keys(definitions).forEach(it => define(`.${it},${it},[is="${it}"]`, definitions[it]))
+Object.keys(definitions).forEach(it => defineAsync(`.${it},${it},[is="${it}"]`, () => import(definitions[it])) )
 
 function renderProxy(fn){
   return function(){

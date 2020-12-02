@@ -6,7 +6,8 @@ var { generateRuntime } = require('./builders/aggregate/runtime')
 var { generateRender } = require('./builders/single/render')
 var { generateStyle } = require('./builders/single/style')
 const { writeFile, readFile, bytesize } = require('./utils')
-var { blue, green, bold, underline, cyan, magenta, dim } = require('kleur')
+var kleur = require('kleur')
+const { bold, dim, green, cyan, blue, underline, yellow } = kleur
 const { generateHandler } = require('./builders/single/handler')
 
 
@@ -29,7 +30,7 @@ module.exports = class Componit{
         await this.single(p, info)
       })
       .on("aggregate", async (targets, changed) => {
-        await this.aggregate(targets)
+        await this.aggregate(targets, changed)
       })
   }
 
@@ -61,17 +62,29 @@ module.exports = class Componit{
 
   }
 
-  prettyPrint({ title, details }){
+  print(message, color="blue"){
+    if(!this.silent){ //ᕳXᕲ
+      console.log(`${kleur[color](`လ  ${bold("it")}`)} ${dim(':')} ${message}`)
+    }
+  }
+  benchmarks(arr){
+    if(!this.silent){ //ᕳXᕲ
+      if(arr.length){
+        console.log(dim("║"))
+      }
+      arr.forEach(({ label, content }, i) => {
+        console.log(`${i === arr.length - 1 ? dim("╚══") : dim("╟══")} ${label} ${dim("═▷")}  ${content}`)
+      });
+    }
+  }
+  tip(message){
     if(!this.silent){
-      console.log(`${blue('ᕳXᕲ')} ${bold(title)} ${
-        details.map(({label, content}) =>
-          `${dim(label)} ${green().bold(content)}`
-        ).join(" ")
-      }`)
+      // console.log(yellow("║"))
+      console.log(`${yellow("╚═▷")}  ${message}`)
     }
   }
 
-  async aggregate(targets){
+  async aggregate(targets, changed, optimized=false, expanded=false){
     
     let [ styles, runtime ] = await Promise.all([
       generateStyles(targets),
@@ -82,14 +95,21 @@ module.exports = class Componit{
       this.write('runtime.js', runtime)
     ])
 
-    this.prettyPrint({
-      title: `it (${blue(Object.keys(targets).length)})`,
-      details: [
-        { label: "runtime.js", content: bytesize(runtime) },
-        { label: "styles.css", content: bytesize(styles) },
-        { label: "duration", content: Date.now() - this.loadStart + 'ms' }
-      ]
-    })
+    let num_changed= Object.keys(changed).length
+    let message = `Built ${bold(num_changed)} component${num_changed === 1 ? '' :  's'} in ${green(Date.now() - this.loadStart + 'ms')}`
+
+    if(expanded){
+      this.print(message)
+      this.benchmarks([
+        { label: "runtime.js", content: cyan(bytesize(runtime)) },
+        { label: "styles.css", content: cyan(bytesize(styles)) }
+      ])
+    } else {
+      this.print(message, 'green')
+      // this.print('/it/Button.js does not have an "it" export', 'yellow')
+      // this.tip(`Read more at ${underline("augm.it/docs/missing-it-export")}`)
+    }
+
 
   }
 
@@ -100,7 +120,7 @@ module.exports = class Componit{
       ...Object.keys(targets).map(async p => {
         await this.single(p, targets[p])
       }),
-      this.aggregate(targets)
+      this.aggregate(targets, Object.keys(targets), true, true)
     ])
   }
 

@@ -1,8 +1,9 @@
 import { render, html, svg } from 'uhtml';
+import css from 'plain-tag'
 import { define, defineAsync, upgrade } from 'wicked-elements'
 
 let definitions = __handlers__
-// Object.keys(definitions).forEach(it => define(`.${it},${it},[is="${it}"]`, definitions[it]))
+
 Object.keys(definitions).forEach(it => defineAsync(`.${it},${it},[is="${it}"]`, () => import(definitions[it])) )
 
 function renderProxy(fn){
@@ -14,7 +15,6 @@ function renderProxy(fn){
 }
 html.node = renderProxy(html.node)
 svg.node = renderProxy(html.node)
-let css = String.raw
 
 function raw(str){
   var template = document.createElement('template')
@@ -23,7 +23,7 @@ function raw(str){
 }
 
 Object.assign(window, {
-  upgrade, render, html, svg, raw, css
+  upgrade, render, html, svg, raw, css, define
 })
 
-export { render, html, svg, raw, css }
+export { render, html, svg, raw, css, define }

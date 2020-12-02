@@ -34,9 +34,9 @@ let rollup_options = (component, id) => {
         virt: `export {default} from 'it'`,
         it: component,
         componit: `
-          import { html, svg, render } from 'external-componit'
+          import { html, svg, raw } from 'external-componit'
           let css=()=>{}
-          export { css, html, svg, render }
+          export { css, html, svg, raw }
         `
       }),
       local_componit({ id }),
